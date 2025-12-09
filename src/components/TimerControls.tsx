@@ -20,6 +20,13 @@ const TimerControls: React.FC<TimerControlsProps> = ({
     }
   }, []);
 
+  // Focus Start button whenever timer becomes paused or reset
+  useEffect(() => {
+    if (!isRunning && startButtonRef.current) {
+      startButtonRef.current.focus();
+    }
+  }, [isRunning]);
+
   return (
     <div className="flex flex-col gap-3 mt-6">
       <button
