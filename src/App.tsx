@@ -4,9 +4,13 @@ import TimerControls from "./components/TimerControls";
 
 const App: React.FC = () => {
   const intervalRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number | null>(null); // timestamp دقیق
+  const startTimeRef = useRef<number | null>(null);
 
-  const [seconds, setSeconds] = useState(0);
+  // Load initial time from localStorage
+  const [seconds, setSeconds] = useState<number>(() => {
+    return Number(localStorage.getItem("seconds")) || 0;
+  });
+
   const [isRunning, setIsRunning] = useState(false);
 
   // Start / Pause
@@ -15,19 +19,19 @@ const App: React.FC = () => {
       const next = !prev;
 
       if (next) {
-        // Starting  
+        // Start
         startTimeRef.current = Date.now() - seconds * 1000;
 
         if (!intervalRef.current) {
           intervalRef.current = window.setInterval(() => {
             if (startTimeRef.current !== null) {
-              const elapsedMs = Date.now() - startTimeRef.current;
-              setSeconds(Math.floor(elapsedMs / 1000));
+              const elapsed = Date.now() - startTimeRef.current;
+              setSeconds(Math.floor(elapsed / 1000));
             }
           }, 100);
         }
       } else {
-        // Pausing
+        // Pause
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
           intervalRef.current = null;
@@ -44,10 +48,19 @@ const App: React.FC = () => {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+
     startTimeRef.current = null;
     setSeconds(0);
     setIsRunning(false);
+
+    // Clear localStorage
+    localStorage.removeItem("seconds");
   };
+
+  // Save to localStorage on every update
+  useEffect(() => {
+    localStorage.setItem("seconds", String(seconds));
+  }, [seconds]);
 
   // Cleanup on unmount
   useEffect(() => {
